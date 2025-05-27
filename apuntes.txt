@@ -1,0 +1,157 @@
+CLASE 10/16
+ACTIVAR  servidor con el comando : php artisan serve 
+Carpetas importantes: app, database, public, resources, routes y storage
+Carpetas que no debemos tocar: vendor
+
+Donde se encuentra el MVC?
+El modelo se encuentra se encuentra en app/models
+Los controladores se encuenta en app/http/controllers
+Las vistas se encuentren en resourcers/views
+Los routers se encuentren en routes/web.php
+
+Flujo: siendo usuarios
+1. Accedemos al sistema (desde al archivo routers/web.php). Dentro definimos una ruta que va estar apuntando a un controlador
+2. El controlador al que apunta si necesita trabajar con los datos de la BD va a llamar a los modelos, si no necesita trabajar con la BD llamra a las vistas.
+
+1. Se define las rutas
+2. Se crea controladores 
+3. Se crea los modelos
+4. Se crea las vistas
+
+MIGRACIONES: mediante las migraciones vamos a crear las tablas con sus campos y sus tipos de datos.
+
+----------------------
+Pasos para hacer el CRUD en Laravel:
+
+0. Abrimos la terminal dentro de la carpeta contenedora
+1.Crear la tabla. Esto lo logramos con las migraciones, ejecutando en la terminal : php artisan make:migration create_nombreTablaPlural_table
+2. La nueva tabla se encontrara en database/migrations/. Luego de crear la tabla seguimos a colocar los atributos para la tabla. Cabe recordar que el nombre de los atributos tienen que estar en ingles. 
+3. Una vez nombrado y creado los atirbutos de la tabla ejecutamos el comando "php artisan migrate" en la terminal
+4. Si al ejecutra nos devuelve "INFO Nothing to migrate." Es porque no se ha agregado ninguna migracion nueva, quizas modificaste/Agregaste columnas pero solo fue de manera interna. La solucion para esto es eliminar todas las tablas y volverlas a generar usando el siguiente comando en la consola: php artisan migrate:fresh. Pero esto tambien eliminara los registros por ello hay que tener mucho cuidado.
+
+
+*Buenas practicas:
+-Nombrar a los archivos siguiendo el mismo formato de los archivos adyacentes.
+-Los modelos se escriben en singular mientras que las tablas de la BD son en plural.
+-Utilizar ingles para casi todo.
+
+---------------------------------------
+ROUTES: es para crear rutas para las paginas
+-hay que tener en cuenta los verbos GET, POST, PUT, DELETE
+-se realizan dentro routes/web.php
+
+-Estructura para crear un route
+Route::[verbo](string $url, array|string|callable||null $accion);
+Route::get('/contacto', function (){
+    return "Probando"
+})
+
+Con respecto a las url, le podemos pasar: 
+
+-Url staticas: no reciben nada 
+=>Route::get('/contacto', function () {
+    return "Lista de contactos";
+});
+
+-Url dinamicas: reciben paraemtros
+=>
+Route::get('/producto/{id}', function ($id) {
+    return "Producto : " . $id;
+})
+
+Esta manera de rutear no es adecuada, por algo de los roles creo xd.
+
+----------------------------------------------------
+COMO EN REALIDAD DEBE DE SER es que una ruta lleve a un controlador, pero para eso debemos de crear primero el controlador.
+ 
+Para crear el controladoor abrimos la terminale ingresamo el siguiente coodigo:
+php artisan make:controller NombreController. Esta se guardara en app/https/controllers. 
+
+Luego de crear el controlador, volvemos a web.php para crear la ruta que lleve a ese controlador
+Route::get('/', HomerController::class);
+Recordar que el route recibe unicamente 2 parametros, la url y array/strings o una funcion. Pero si o si tenemos que pasar como parametro al controlador, entonces ¿como añadimos la accion/funcion que hara? Para ello lo que necesitamos hacer es encerrar en un array el controlador mas la accion, IMPORTANTE: la accion tendria que ser una de las funciones que se encuentra dentro del controlador.
+Route::get('/', [HomerController::class, 'index']);
+
+Luego de crear esa ruta nos vamos al controlador para crear las funciones que tendra.
+
+*Sugerencias: cuando una pagina solo es de pura lectura se recomienda englobalro en una sola funcion, por lo tanto el ocntrollador pasara a tener una funcion __invok, o cuando un controllador solo tiene una funcion se le recomienda asignarlo como __invok. Luego para llamarlo al tener un sola funcion no es necesario espeificar la funcion que se llamara del controlador y tam solo colocar la ruta mas el controlador.
+Route::get('/', HomerController::class);
+
+resmunen: 
+-rutear controlladores con un solo metodo
+Route::get('/', HomerController::class);
+-rutear controlladores con mas de un metodo
+Route::get('/', [HomerController::class, 'index']);
+
+
+---
+CRUD
+Luego de haber ingresado sus respectivas funciones a los controladores, procederemos a crear un controlador CRUD general para cada Tabla con el siugiente comando: php artisan make:controller NombreController --resource
+
+Al crear nos traera funciones predeterminadas. Como hago para crear la ruta para cada una de las funciones qeu tiene? pues de la siguiente manera: Route::resource('/Articulos', ArticleController::class)  
+Lo definimos como si fuera un controlador con un solo metodo " __invok()", es decir colocando solamente el nombre del controlador.
+Y para llamar a cada uno de las funciones que tiene basta con ir a la url, en este caso /Articulos, si solo dejamos asi llamara a la funcion index, pero si queremos llamar a una funcion en especifo agregamos en la url de googlechrom el /nombreDeLaFuncion. => /Articulos/create
+
+
+--Models-
+Cada tabla en la BD representa un modelo
+el nombre del modelo en singular a diferencia de las migraciones que es en plural
+Crear un model con php artisan make:model Article. Esto se almacenara en app/models
+Estos modelos integran un ORM que nos permitiran interactuar con la BD de una manera mas sencilla
+No vamos a tener que escribir ninguna consulta SQL, todo esta definido en funciones que son extendidas de la carpeta Iluminate/Database/Eloqient/Model
+
+-views
+Estos se alamcenan en resouserces/views
+Los archivos vistas tienen que terminarn en la extension blade.php => welcome.blade.php
+
+crear una vista con php artisan make:view nombre => php artisan make:view index (no es necsrio colocar la exteison blade.php, eso solo es necesario si creamos las vistas manualmente)
+
+Las vistas que creamos en una instanica de CRUD son : 
+-index (mostrar todos los registros)
+-create (formulario para crear registros)
+-edit (editar registros)
+-show (mostrar 1 registro por su id)
+
+Para una mejor estructuracion se recomienda almacenar en una carpeta dentro de resourcers/views las vistas deL CRUD de la Tabla en epsecifico. Entonces para crear una vista dentro de esa carpeta usamos el comando php artisan make:view nombreCarpeta.nombreDeLaVista 
+=> php artisan make:view articulos.index
+
+Si en el controlador queremos mostrar una vista. Hacemos lo siguiente: dentro de la funcion que eligas, por ejemplo la funcion index, tiene que retornar un view('nombreDeLaCarpeta/nombreDeLaVista')
+=> return view('articulos.index')
+
+RESUMEN GENERAL :
+-Creamos el sistema de enrutamiento
+-Controladores y del tipo resource (para trabajar con un CRUD):
+Si no necesitamos trabajar con un CRUD porque solo vamos a mostrar una vista no es necesario crear el controlador de tipo resoruce
+-Creamos las vistas
+-Creamos los modelos (conexion a la info de la bd)
+
+------------------------------------------------
+CLASE 10/30
+
+Explicacion del TP
+
+Para que el href de una etiqueta <a> diriga a la pagina proporcionada se debera de cambiar el contenido del href a lo siguiente: href="{{ route('pagina') }}"
+
+la pagina vendria a ser el nombre de la ruta que definimos en web.php. Por ejemplo si tenemos esto en web.php:
+Route::resource('/articulos', ArticleController::class);
+Entonces el href sera "{{route ('articulos')}}"
+
+En el caso de que se este dirigiendo a un controlador resource o un controlador con mas de 1 funcion, en pagina teneos que especificar cual de las funciones llamar. En este caso seria 
+"{{route ('articulos.index')}}"
+
+Con respecto al punto de "Implementar el sistema de autenticación de Laravel para gestionar el login y el registro
+de Usuarios y Empleados": La logica para que luego el usuario se loguee, dependiendo de que rol sea redirigira a sus respectivos dashboard. Esto lo hacemos en el archivo resources/views/dashboard.blade.php
+Para cambiar la tabla usuarios que creo LARAVEL e implementar un campo rol nos dirigimos a database/migrations/createusertable
+
+
+Creacion de htmls en las vistas: para no tener que repetir el header y footer en cada archivo vamos a almacenarlos en una plantilla la cual vamos a almacenrals en resources/views/layouts/
+
+para importar/extender/incluir ese template en las vistas finales: @extends('layouts.nombreDelArchivo')
+
+Dentro de los template exiten contenido dinamicos y estaticos. 
+
+
+Donde incluir el css? en la carpeta public
+
+PARA EMPEZAR HACER EL TP PASOS:
+1.HACER LAS MIGRACIONES
