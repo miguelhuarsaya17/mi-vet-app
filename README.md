@@ -108,12 +108,11 @@ php artisan key:generate
 php artisan migrate
 ```
 
-# Crear el enlace simbólico para acceder a los archivos en storage
+4. Crear el enlace simbólico para acceder a los archivos en storage:
+   
 ```bash
 php artisan storage:link
 ```
-
-4. (Opcional) Ejecutar seeders si los tenés configurados.
 
 5. Iniciar el servidor de desarrollo:
 
